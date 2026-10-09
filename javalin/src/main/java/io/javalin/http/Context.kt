@@ -48,6 +48,8 @@ import java.util.stream.Stream
 import kotlin.reflect.KClass
 import kotlin.reflect.javaType
 import kotlin.reflect.typeOf
+import io.javalin.http.ContentType.APPLICATION_JSON
+import io.javalin.http.ContentType.APPLICATION_PROBLEM_JSON
 
 /**
  * Provides access to functions for handling the request and response
@@ -490,6 +492,16 @@ interface Context {
 
     /** @see [json] */
     fun json(obj: Any): Context = json(obj, obj::class.java)
+
+    /**
+     * Serializes a [Problem] to a JSON-string using the registered [io.javalin.json.JsonMapper]
+     * and sets it as the context result. Also sets content type to application/problem+json,
+     * and the response status to [Problem.status] if it is present.
+     */
+    fun problem(problem: Problem): Context {
+        problem.status?.let { status(it) }
+        return json(problem.toMap()).contentType(APPLICATION_PROBLEM_JSON)
+    }
 
     /**
      * Serializes object to a JSON-stream using the registered [io.javalin.json.JsonMapper] and sets it as the context result.
